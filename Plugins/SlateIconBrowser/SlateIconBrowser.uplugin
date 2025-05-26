@@ -1,0 +1,25 @@
+﻿{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "1.0",
+  "FriendlyName": "Slate Icon Browser",
+  "Description": "Browse Slate brushes for all Editor styles and copy their code snippets",
+  "Category": "Programming",
+  "CreatedBy": "sirjofri",
+  "CreatedByURL": "https://sirjofri.de",
+  "DocsURL": "https://github.com/sirjofri/SlateIconBrowser/blob/master/Readme.md",
+  "MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/7f51deb58ead4fed88abc798ca7c9ae4",
+  "EngineVersion": "5.5.0",
+  "CanContainContent": false,
+  "IsBetaVersion": false,
+  "IsExperimentalVersion": false,
+  "Installed": false,
+  "Modules": [
+    {
+      "Name": "SlateIconBrowser",
+      "Type": "Editor",
+      "LoadingPhase": "Default",
+      "WhitelistPlatforms": [ "Win64" ]
+    }
+  ]
+}
