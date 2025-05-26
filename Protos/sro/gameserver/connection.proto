@@ -1,0 +1,63 @@
+syntax = "proto3";
+package sro.gameserver;
+option go_package = "github.com/ShatteredRealms/gameserver-service/pkg/pb;pb";
+
+import "google/api/annotations.proto";
+import "sro/globals.proto";
+
+service ConnectionService {
+  rpc ConnectGameServer(sro.TargetId) returns (ConnectGameServerResponse) {
+    option (google.api.http) = {
+      get : "/v1/connect/character/id/{id}"
+    };
+  }
+
+  // Called by the gameserver to verifying and incoming connection
+  // request. Returns the character id if the connection was successful
+  rpc VerifyConnect(VerifyConnectRequest) returns (sro.TargetId) {
+    option (google.api.http) = {
+      post : "/v1/connect/verify"
+      body : "*"
+    };
+  }
+
+  rpc TransferPlayer(TransferPlayerRequest)
+      returns (ConnectGameServerResponse) {
+    option (google.api.http) = {
+      post : "/v1/transfer"
+      body : "*"
+    };
+  }
+
+  rpc IsCharacterPlaying(sro.TargetId) returns (ConnectionStatus) {
+    option (google.api.http) = {
+      get : "/v1/status/character/id/{id}"
+    };
+  }
+
+  rpc IsUserPlaying(sro.TargetId) returns (ConnectionStatus) {
+    option (google.api.http) = {
+      get : "/v1/status/user/id/{id}"
+    };
+  }
+}
+
+message ConnectGameServerResponse {
+  string address = 1;
+  uint32 port = 2;
+  string connection_id = 3;
+}
+
+message VerifyConnectRequest {
+  // Connection id provided to the server by a pending connecting target
+  string connection_id = 1;
+  // Name of server verifying the connection request
+  string server_name = 2;
+}
+
+message ConnectionStatus { bool online = 1; }
+
+message TransferPlayerRequest {
+  string character = 1;
+  sro.Location location = 2;
+}

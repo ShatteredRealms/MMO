@@ -1,0 +1,471 @@
+﻿#pragma once
+
+#include "CoreMinimal.h"
+#include "Dom/JsonObject.h"
+
+#include "DataTypes.generated.h"
+
+USTRUCT(BlueprintType)
+struct FObjectMeta
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	FString Name;
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	FString Namespace;
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	FString Uid;
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	FString ResourceVersion;
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	int64 Generation = 0;
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	int64 CreationTimestamp = 0;
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	int64 DeletionTimestamp = 0;
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	TMap<FString, FString> Annotations;
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	TMap<FString, FString> Labels;
+
+	FObjectMeta()
+	{
+	}
+
+	explicit FObjectMeta(TSharedPtr<FJsonObject> JsonObject)
+	{
+		JsonObject->TryGetStringField(TEXT("name"), Name);
+		JsonObject->TryGetStringField(TEXT("namespace"), Namespace);
+		JsonObject->TryGetStringField(TEXT("uid"), Uid);
+		JsonObject->TryGetStringField(TEXT("resource_version"), ResourceVersion);
+		JsonObject->TryGetNumberField(TEXT("generation"), Generation);
+		JsonObject->TryGetNumberField(TEXT("creation_timestamp"), CreationTimestamp);
+		JsonObject->TryGetNumberField(TEXT("deletion_timestamp"), DeletionTimestamp);
+		const TSharedPtr<FJsonObject>* AnnotationsJsonObject;
+		if (JsonObject->TryGetObjectField(TEXT("annotations"), AnnotationsJsonObject))
+		{
+			for (const auto& Entry : (*AnnotationsJsonObject)->Values)
+			{
+				if (Entry.Value.IsValid() && !Entry.Value->IsNull())
+				{
+					FJsonValueString Key = Entry.Key;
+					TSharedPtr<FJsonValue> Value = Entry.Value;
+					FString AnnotationKey = Key.AsString();
+					FString AnnotationValue = Value->AsString();
+					Annotations.Add(AnnotationKey, AnnotationValue);
+				}
+			}
+		}
+		const TSharedPtr<FJsonObject>* LabelsObject;
+		if (JsonObject->TryGetObjectField(TEXT("labels"), LabelsObject))
+		{
+			for (const auto& Entry : (*LabelsObject)->Values)
+			{
+				if (Entry.Value.IsValid() && !Entry.Value->IsNull())
+				{
+					FJsonValueString Key = Entry.Key;
+					TSharedPtr<FJsonValue> Value = Entry.Value;
+					FString LabelKey = Key.AsString();
+					FString LabelValue = Value->AsString();
+					Labels.Add(LabelKey, LabelValue);
+				}
+			}
+		}
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FHealth
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	bool bDisabled = false;
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	int32 PeriodSeconds = 0;
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	int32 FailureThreshold = 0;
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	int32 InitialDelaySeconds = 0;
+
+	FHealth()
+	{
+	}
+
+	explicit FHealth(const TSharedPtr<FJsonObject> JsonObject)
+	{
+		JsonObject->TryGetBoolField(TEXT("disabled"), bDisabled);
+		JsonObject->TryGetNumberField(TEXT("period_seconds"), PeriodSeconds);
+		JsonObject->TryGetNumberField(TEXT("failure_threshold"), FailureThreshold);
+		JsonObject->TryGetNumberField(TEXT("initial_delay_seconds"), InitialDelaySeconds);
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FSpec
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	FHealth Health;
+
+	FSpec()
+	{
+	}
+
+	explicit FSpec(const TSharedPtr<FJsonObject> JsonObject)
+	{
+		const TSharedPtr<FJsonObject>* HealthJsonObject;
+		if (JsonObject->TryGetObjectField(TEXT("health"), HealthJsonObject))
+		{
+			Health = FHealth(*HealthJsonObject);
+		}
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FAddress
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	FString Type;
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	FString Address;
+
+	FAddress()
+	{
+	}
+
+	explicit FAddress(const TSharedPtr<FJsonObject> JsonObject)
+	{
+		JsonObject->TryGetStringField(TEXT("type"), Type);
+		JsonObject->TryGetStringField(TEXT("address"), Address);
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FPort
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	FString Name;
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	int32 Port = 0;
+
+	FPort()
+	{
+	}
+
+	explicit FPort(const TSharedPtr<FJsonObject> JsonObject)
+	{
+		JsonObject->TryGetStringField(TEXT("name"), Name);
+		JsonObject->TryGetNumberField(TEXT("port"), Port);
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FStatus
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	FString State;
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	FString Address;
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	TArray<FAddress> Addresses;
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	TArray<FPort> Ports;
+
+	FStatus()
+	{
+	}
+
+	explicit FStatus(const TSharedPtr<FJsonObject> JsonObject)
+	{
+		JsonObject->TryGetStringField(TEXT("state"), State);
+		JsonObject->TryGetStringField(TEXT("address"), Address);
+		const TArray<TSharedPtr<FJsonValue>>* AddressesArray;
+		if (JsonObject->TryGetArrayField(TEXT("addresses"), AddressesArray))
+		{
+			const int32 ArrLen = AddressesArray->Num();
+			for (int32 i = 0; i < ArrLen; ++i)
+			{
+				const TSharedPtr<FJsonValue>& AddressItem = (*AddressesArray)[i];
+				if (AddressItem.IsValid() && !AddressItem->IsNull())
+				{
+					FAddress NewAddress = FAddress(AddressItem->AsObject());
+					Addresses.Add(NewAddress);
+				}
+			}
+		}
+		const TArray<TSharedPtr<FJsonValue>>* PortsArray;
+		if (JsonObject->TryGetArrayField(TEXT("ports"), PortsArray))
+		{
+			const int32 ArrLen = PortsArray->Num();
+			for (int32 i = 0; i < ArrLen; ++i)
+			{
+				const TSharedPtr<FJsonValue>& PortItem = (*PortsArray)[i];
+				if (PortItem.IsValid() && !PortItem->IsNull())
+				{
+					FPort Port = FPort(PortItem->AsObject());
+					Ports.Add(Port);
+				}
+			}
+		}
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FGameServer
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	FStatus Status;
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	FObjectMeta ObjectMeta;
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	FSpec Spec;
+
+	FGameServer()
+	{
+	}
+
+	explicit FGameServer(const TSharedPtr<FJsonObject> JsonObject)
+	{
+		const TSharedPtr<FJsonObject>* ObjectMetaJsonObject;
+		if (JsonObject->TryGetObjectField(TEXT("object_meta"), ObjectMetaJsonObject))
+		{
+			ObjectMeta = FObjectMeta(*ObjectMetaJsonObject);
+		}
+		const TSharedPtr<FJsonObject>* SpecJsonObject;
+		if (JsonObject->TryGetObjectField(TEXT("spec"), SpecJsonObject))
+		{
+			Spec = FSpec(*SpecJsonObject);
+		}
+		const TSharedPtr<FJsonObject>* StatusJsonObject;
+		if (JsonObject->TryGetObjectField(TEXT("status"), StatusJsonObject))
+		{
+			Status = FStatus(*StatusJsonObject);
+		}
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FKVPair
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	FString Key;
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	FString Value;
+};
+
+USTRUCT(BlueprintType)
+struct FDuration
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	int64 Seconds = 0;
+};
+
+USTRUCT(BlueprintType)
+struct FAgonesPlayer
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	FString PlayerID;
+};
+
+USTRUCT(BlueprintType)
+struct FPlayerCapacity
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	int64 Count = 0;
+};
+
+USTRUCT(BlueprintType)
+struct FAgonesError
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	FString ErrorMessage;
+};
+
+USTRUCT(BlueprintType)
+struct FConnected
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	bool bConnected = false;
+
+	FConnected()
+	{
+	}
+
+	explicit FConnected(const TSharedPtr<FJsonObject> JsonObject)
+	{
+		JsonObject->TryGetBoolField(TEXT("bool"), bConnected);
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FDisconnect
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	bool bDisconnected = false;
+
+	FDisconnect()
+	{
+	}
+
+	explicit FDisconnect(const TSharedPtr<FJsonObject> JsonObject)
+	{
+		JsonObject->TryGetBoolField(TEXT("bool"), bDisconnected);
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FCount
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	int64 Count = 0;
+
+	FCount()
+	{
+	}
+
+	FCount(const int64 InCount)
+		: Count(InCount)
+	{
+	}
+
+	explicit FCount(const TSharedPtr<FJsonObject> JsonObject)
+	{
+		JsonObject->TryGetNumberField(TEXT("count"), Count);
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FCounter
+{
+	GENERATED_BODY()
+
+	FCounter()
+	{
+	}
+
+	UPROPERTY(BlueprintReadOnly, Category = "Agones")
+	int64 Count = 0;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Agones")
+	int64 Capacity = 0;
+
+	explicit FCounter(const TSharedPtr<FJsonObject> JsonObject)
+	{
+		JsonObject->TryGetNumberField(TEXT("count"), Count);
+        JsonObject->TryGetNumberField(TEXT("capacity"), Capacity);
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FList
+{
+	GENERATED_BODY()
+
+	FList()
+	{
+	}
+
+	UPROPERTY(BlueprintReadOnly, Category = "Agones")
+	TArray<FString> List;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Agones")
+	int64 Capacity = 0;
+
+	explicit FList(const TSharedPtr<FJsonObject> JsonObject)
+	{
+		JsonObject->TryGetStringArrayField(TEXT("count"), List);
+        JsonObject->TryGetNumberField(TEXT("capacity"), Capacity);
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FBool
+{
+	GENERATED_BODY()
+	FBool()
+	{
+	}
+
+	FBool(const bool InValue)
+		: bValue(InValue)
+	{
+	}
+
+	UPROPERTY(BlueprintReadOnly, Category = "Agones")
+	bool bValue = false;
+};
+
+USTRUCT(BlueprintType)
+struct FConnectedPlayers
+{
+	GENERATED_BODY()
+
+	FConnectedPlayers()
+	{
+	}
+
+	FConnectedPlayers(TArray<FString>& InConnectedPlayers)
+		: ConnectedPlayers(InConnectedPlayers)
+	{
+	}
+
+	FConnectedPlayers(FList& InList)
+	{
+		ConnectedPlayers = InList.List;
+	}
+
+	UPROPERTY(BlueprintReadOnly, Category="Agones")
+	TArray<FString> ConnectedPlayers;
+
+	explicit FConnectedPlayers(const TSharedPtr<FJsonObject> JsonObject)
+	{
+		JsonObject->TryGetStringArrayField(TEXT("list"), ConnectedPlayers);
+	}
+};
+

@@ -1,0 +1,24 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "Common SRO",
+	"Description": "Common SRO types and functions used by SRO",
+	"Category": "Utilities",
+	"CreatedBy": "Wil Simpson",
+	"CreatedByURL": "https://shatteredrealmsonline.com",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": false,
+	"IsBetaVersion": false,
+	"Installed": false,
+	"EnabledByDefault" : false, 
+	"Modules": [
+		{
+			"Name": "CommonSRO",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}

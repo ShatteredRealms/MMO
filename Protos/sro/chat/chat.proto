@@ -1,0 +1,190 @@
+syntax = "proto3";
+package sro.chat;
+option go_package = "github.com/ShatteredRealms/chat-service/pkg/pb;pb";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "sro/globals.proto";
+
+service ChatService {
+  rpc ConnectChatChannel(ConnectChatChannelRequest)
+      returns (stream ChatMessage) {
+    option (google.api.http) = {
+      get : "/v1/message/channel/id/{channel_id}"
+    };
+  }
+
+  rpc ConnectDirectMessages(sro.TargetId) returns (stream ChatMessage) {
+    option (google.api.http) = {
+      get : "/v1/message/character/id/{id}"
+    };
+  }
+
+  rpc SendChatChannelMessage(SendChatChannelMessageRequest)
+      returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put : "/v1/message/channel/id/{channel_id}"
+      body : "*"
+    };
+  }
+
+  rpc SendDirectMessage(SendDirectMessageRequest)
+      returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put : "/v1/message/character/id/{character_id}"
+      body : "*"
+    };
+  }
+
+  // TODO: Have request allow for filtering
+  rpc GetChatChannels(google.protobuf.Empty) returns (ChatChannels) {
+    option (google.api.http) = {
+      get : "/v1/channels"
+    };
+  }
+
+  rpc GetChatChannel(sro.TargetId) returns (ChatChannel) {
+    option (google.api.http) = {
+      get : "/v1/channels/id/{id}"
+    };
+  }
+
+  rpc CreateChatChannel(CreateChatChannelMessage) returns (ChatChannel) {
+    option (google.api.http) = {
+      post : "/v1/channels"
+      body : "*"
+    };
+  }
+
+  rpc DeleteChatChannel(sro.TargetId) returns (ChatChannel) {
+    option (google.api.http) = {
+      delete : "/v1/channels/id/{id}"
+    };
+  }
+
+  rpc EditChatChannel(UpdateChatChannelRequest) returns (ChatChannel) {
+    option (google.api.http) = {
+      put : "/v1/channels/id/{channel_id}"
+      body : "*"
+    };
+  }
+
+  rpc GetAuthorizedChatChannels(sro.TargetId) returns (ChatChannels) {
+    option (google.api.http) = {
+      get : "/v1/character/id/{id}/channels"
+    };
+  }
+
+  // Sets the character chat channels to the given list of channels
+  rpc SetCharacterChatChannelAuth(RequestSetCharacterSetChatChannelAuth)
+      returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post : "/v1/characters/id/{character_id}/channels"
+    };
+  }
+
+  // If add is true, adds the given channels to the character's chat channels,
+  // otherwise removes them
+  rpc UpdateCharacterChatChannelAuth(RequestUpdateCharacterSetChatChannelAuth)
+      returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put : "/v1/characters/id/{character_id}/channels"
+    };
+  }
+
+  rpc BanCharacterFromChatChannel(BanRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post : "/v1/characters/id/{character_id}/channels/{channel_id}/ban"
+    };
+  }
+
+  rpc GetChatLogs(ChatLogRequest) returns (ChatLogs) {
+    option (google.api.http) = {
+      get : "/v1/chat/{channel_id}/logs"
+    };
+  }
+}
+
+message ChatLogRequest {
+  string channel_id = 1;
+  oneof optional_sender_id { string sender_id = 2; }
+  oneof optional_before { int64 before = 3; }
+  oneof optional_after { int64 after = 4; }
+  oneof optional_limit { uint64 limit = 5; }
+  oneof optional_offset { uint64 offset = 6; }
+}
+
+message ChatLog {
+  uint64 sent_at = 1;
+  string channel_id = 2;
+  string sender_id = 3;
+  string content = 4;
+}
+
+message ChatLogs {
+  uint64 total = 1;
+  repeated ChatLog logs = 2;
+}
+
+message BanRequest {
+  string character_id = 1;
+  string channel_id = 2;
+
+  // Duration in seconds.
+  // If 0, the ban is will not expire.
+  // If -1, the ban is lifted. int64 duration = 3;
+  int64 duration = 3;
+}
+
+message ConnectChatChannelRequest {
+  string channel_id = 1;
+  string character_id = 2;
+}
+
+message RequestSetCharacterSetChatChannelAuth {
+  string character_id = 1;
+  repeated string ids = 2;
+}
+
+message RequestUpdateCharacterSetChatChannelAuth {
+  string character_id = 1;
+  bool add = 2;
+  repeated string ids = 3;
+}
+
+message ChatChannel {
+  string id = 1;
+  string name = 2;
+  string dimension_id = 3;
+  bool public = 4;
+}
+
+message ChatChannels { repeated ChatChannel channels = 1; }
+
+message CreateChatChannelMessage {
+  string name = 1;
+  string dimension_id = 2;
+}
+
+message ChatMessage {
+  string sender_character_id = 1;
+  string content = 2;
+  int64 sent_time_ms = 3;
+}
+
+message SendChatChannelMessageRequest {
+  string channel_id = 1;
+  ChatMessage chat_message = 2;
+}
+
+message SendDirectMessageRequest {
+  string character_id = 1;
+  ChatMessage chat_message = 2;
+}
+
+message UpdateChatChannelRequest {
+  string channel_id = 1;
+  oneof optional_name { string name = 2; }
+  oneof optional_dimension { string dimension = 3; }
+  oneof optional_public { bool public = 4; }
+}

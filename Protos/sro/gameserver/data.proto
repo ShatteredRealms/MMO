@@ -1,0 +1,17 @@
+syntax = "proto3";
+package sro.gameserver;
+option go_package = "github.com/ShatteredRealms/gameserver-service/pkg/pb;pb";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "sro/globals.proto";
+
+service GameServerDataService {
+  rpc GetGameServerDetails(google.protobuf.Empty) returns (GameServerDetails) {
+    option (google.api.http) = {
+      get : "/v1/status/gameserver"
+    };
+  }
+}
+
+message GameServerDetails { int32 count = 1; }

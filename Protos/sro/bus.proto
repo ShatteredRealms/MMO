@@ -1,0 +1,22 @@
+syntax = "proto3";
+package sro;
+option go_package = "github.com/ShatteredRealms/go-common-service/pkg/pb;pb";
+
+import "google/api/annotations.proto";
+
+service BusService {
+  rpc ResetReaderBus(BusTarget) returns (ResetBusResponse) {
+    option (google.api.http) = {
+      get : "/v1/bus/reset/reader"
+    };
+  }
+  rpc ResetWriterBus(BusTarget) returns (ResetBusResponse) {
+    option (google.api.http) = {
+      get : "/v1/bus/reset/writer"
+    };
+  }
+}
+
+message BusTarget { string type = 1; }
+
+message ResetBusResponse { string message = 1; }

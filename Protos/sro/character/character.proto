@@ -1,0 +1,113 @@
+syntax = "proto3";
+package sro.character;
+option go_package = "github.com/ShatteredRealms/character-service/pkg/pb;pb";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/field_mask.proto";
+import "sro/globals.proto";
+import "sro/filter.proto";
+
+service CharacterService {
+  rpc GetCharacter(GetCharacterRequest) returns (Character) {
+    option (google.api.http) = {
+      get : "/v1/characters/id/{id}"
+    };
+  }
+
+  rpc GetCharacters(GetCharactersRequest) returns (Characters) {
+    option (google.api.http) = {
+      get : "/v1/characters"
+    };
+  }
+
+  rpc GetCharactersForUser(GetUserCharactersRequest) returns (Characters) {
+    option (google.api.http) = {
+      get : "/v1/characters/owner/{owner_id}"
+    };
+  }
+
+  rpc CreateCharacter(CreateCharacterRequest) returns (Character) {
+    option (google.api.http) = {
+      post : "/v1/characters"
+      body : "*"
+    };
+  }
+
+  rpc DeleteCharacter(sro.TargetId) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete : "/v1/characters/id/{id}"
+    };
+  }
+
+  rpc EditCharacter(EditCharacterRequest) returns (Character) {
+    option (google.api.http) = {
+      patch : "/v1/characters/id/{character.id}"
+      body : "*"
+    };
+  }
+
+  // Adds the given amount of playtime to the character and returns the total
+  // playtime
+  rpc AddCharacterPlayTime(AddPlayTimeRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      patch : "/v1/characters/id/{id}/playtime"
+      body : "time"
+    };
+  }
+}
+
+message GetCharacterRequest {
+  google.protobuf.FieldMask mask = 1;
+  string id = 2;
+}
+
+message GetCharactersRequest {
+  google.protobuf.FieldMask mask = 1;
+  sro.QueryFilters filters = 2;
+}
+
+message GetUserCharactersRequest {
+  google.protobuf.FieldMask mask = 1;
+  sro.QueryFilters filters = 2;
+  string owner_id = 3;
+}
+
+message EditCharacterRequest {
+  google.protobuf.FieldMask mask = 1;
+  Character character = 2;
+}
+
+message CreateCharacterRequest {
+  string owner_id = 1;
+  string name = 2;
+  string gender = 3;
+  string realm = 4;
+  string dimension_id = 5;
+  string profession = 6;
+}
+
+message Character {
+  string id = 1;
+  string owner_id = 2;
+  string name = 3;
+  string gender = 4;
+  string realm = 5;
+  int32 play_time = 6;
+  sro.Location location = 7;
+  string dimension_id = 8;
+  int64 created_at = 9;
+  int64 updated_at = 10;
+  int64 deleted_at = 11;
+  string profession = 12;
+}
+
+message Characters {
+  int64 total = 1;
+  repeated Character characters = 2;
+}
+
+message AddPlayTimeRequest {
+  string id = 1;
+  int32 time = 2;
+}

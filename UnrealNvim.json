@@ -1,0 +1,49 @@
+{
+	"version": "0.0.2",
+	"_comment": "dont forget to escape backslashes in EnginePath",
+	"EngineDir": "/mnt/z/UnrealEngine",
+	"Targets": [
+		{
+			"TargetName": "MMO-Editor",
+			"Configuration": "DebugGame",
+			"withEditor": true,
+			"UbtExtraFlags": "",
+			"PlatformName": "Win64"
+		},
+		{
+			"TargetName": "MMO",
+			"Configuration": "DebugGame",
+			"withEditor": false,
+			"UbtExtraFlags": "",
+			"PlatformName": "Win64"
+		},
+		{
+			"TargetName": "MMO-Editor",
+			"Configuration": "Development",
+			"withEditor": true,
+			"UbtExtraFlags": "",
+			"PlatformName": "Win64"
+		},
+		{
+			"TargetName": "MMO",
+			"Configuration": "Development",
+			"withEditor": false,
+			"UbtExtraFlags": "",
+			"PlatformName": "Win64"
+		},
+		{
+			"TargetName": "MMO-Editor",
+			"Configuration": "Shipping",
+			"withEditor": true,
+			"UbtExtraFlags": "",
+			"PlatformName": "Win64"
+		},
+		{
+			"TargetName": "MMO",
+			"Configuration": "Shipping",
+			"withEditor": false,
+			"UbtExtraFlags": "",
+			"PlatformName": "Win64"
+		}
+	]
+}

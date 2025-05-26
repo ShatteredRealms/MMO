@@ -1,0 +1,27 @@
+syntax = "proto3";
+package sro.character;
+option go_package = "github.com/ShatteredRealms/character-service/pkg/pb;pb";
+
+import "google/api/annotations.proto";
+import "google/protobuf/field_mask.proto";
+
+service InventoryService {
+  rpc GetInventory(GetInventoryRequest) returns (GetInventoryResponse) {
+    option (google.api.http) = {
+      get : "/v1/characters/id/{character_id}/inventory"
+    };
+  }
+}
+
+message GetInventoryRequest {
+  google.protobuf.FieldMask mask = 1;
+  string character_id = 2;
+}
+
+message GetInventoryResponse { repeated Item items = 1; }
+
+message Item {
+  uint32 id = 1;
+  uint32 slot = 2;
+  uint32 quantity = 3;
+}

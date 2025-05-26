@@ -1,0 +1,61 @@
+
+syntax = "proto3";
+package sro.gameserver;
+option go_package = "github.com/ShatteredRealms/gameserver-service/pkg/pb;pb";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "sro/globals.proto";
+
+service MapService {
+  rpc GetMap(sro.TargetId) returns (Map) {
+    option (google.api.http) = {
+      get : "/v1/maps/id/{id}"
+    };
+  }
+
+  rpc GetMaps(google.protobuf.Empty) returns (Maps) {
+    option (google.api.http) = {
+      get : "/v1/maps"
+    };
+  }
+
+  rpc CreateMap(CreateMapRequest) returns (Map) {
+    option (google.api.http) = {
+      post : "/v1/maps"
+      body : "*"
+    };
+  }
+
+  rpc EditMap(EditMapRequest) returns (Map) {
+    option (google.api.http) = {
+      put : "/v1/maps/id/{target_id}"
+      body : "*"
+    };
+  }
+
+  rpc DeleteMap(sro.TargetId) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete : "/v1/maps/id/{id}"
+    };
+  }
+}
+
+message CreateMapRequest {
+  string name = 1;
+  string map_path = 2;
+}
+
+message EditMapRequest {
+  string target_id = 1;
+  oneof optional_name { string name = 2; }
+  oneof optional_map_path { string map_path = 3; }
+}
+
+message Map {
+  string id = 1;
+  string name = 2;
+  string map_path = 3;
+}
+
+message Maps { repeated Map maps = 1; }
