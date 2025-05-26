@@ -1,0 +1,4 @@
+Diagnostics:
+  Suppress: 
+    - "-Wextra-semi"
+    - "unused-includes"

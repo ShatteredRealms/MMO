@@ -94,3 +94,7 @@ Agones\ Sidecar
 Config/ServerSettings.ini
 
 AgonesSidecar/*
+
+# LSP
+compile_commands.json
+tags

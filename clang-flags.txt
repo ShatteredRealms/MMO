@@ -1,0 +1,9 @@
+-std=c++20
+-ferror-limit=0
+-Wall
+-Wextra
+-Wpedantic
+-Wshadow-all
+-Wno-unused-parameter
+-Wc++11-narrowing
+
